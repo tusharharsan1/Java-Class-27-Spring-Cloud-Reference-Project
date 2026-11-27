@@ -39,7 +39,17 @@ public class EmbeddingClient {
     }
 
     private String embeddingBase() {
-        return url; // Class 27: replace this method in Part 5.
+        if (!discover) {
+            return url;
+        }
+        List<ServiceInstance> instances = discoveryClient.getInstances("embedding-service");
+        // This class uses one embedding instance. Class 28 will teach selection among replicas.
+        if (instances.size() != 1) {
+            throw new RestClientException("Expected one embedding instance, found " + instances.size());
+        }
+        String address = instances.get(0).getUri().toString();
+        log.info("Discovered embedding address {}", address);
+        return address + "/v1beta";
     }
 
     // One call can carry many texts. kind is RETRIEVAL_DOCUMENT for a product and RETRIEVAL_QUERY for a search.
